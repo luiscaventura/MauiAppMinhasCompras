@@ -4,8 +4,8 @@ namespace MauiAppMinhasCompras.Views;
 
 public partial class EditarProduto : ContentPage
 {
-	public EditarProduto()
-	{
+    public EditarProduto()
+    {
         InitializeComponent();
     }
 
@@ -24,7 +24,7 @@ public partial class EditarProduto : ContentPage
             };
 
             await App.Db.Update(p);
-            await DisplayAlert("Sucesso", "Registro Atualizado", "OK");
+            await DisplayAlert("Sucesso!", "Registro Atualizado", "OK");
             await Navigation.PopAsync();
         }
         catch (Exception ex)
