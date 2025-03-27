@@ -61,5 +61,14 @@ namespace MauiAppMinhasCompras.Helpers
             string sql = "SELECT * FROM Produto WHERE Descricao LIKE ? AND Categoria = ?";
             return _conn.QueryAsync<Produto>(sql, "%" + descricao + "%", categoria);
         }
+
+        public async Task<Dictionary<string, double>> GetTotalPorCategoria()
+        {
+            var produtos = await _conn.Table<Produto>().ToListAsync();
+
+            return produtos
+                .GroupBy(p => p.Categoria)
+                .ToDictionary(g => g.Key, g => g.Sum(p => p.Total));
+        }
     }
 }

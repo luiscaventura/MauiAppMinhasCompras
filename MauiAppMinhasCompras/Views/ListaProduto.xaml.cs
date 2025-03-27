@@ -109,12 +109,21 @@ public partial class ListaProduto : ContentPage
         }
     }
 
-    private void ToolbarItem_Clicked_1(object sender, EventArgs e)
+    private async void ToolbarItem_Clicked_1(object sender, EventArgs e)
     {
-        double soma = lista.Sum(i => i.Total);
-        string msg = $"O total é {soma:C}";
-        DisplayAlert("Total dos Produtos", msg, "OK");
+        double somaGeral = lista.Sum(i => i.Total);
+        var totaisPorCategoria = await App.Db.GetTotalPorCategoria();
+
+        string mensagem = $"O total é {somaGeral:C}\n\n";
+
+        foreach (var item in totaisPorCategoria)
+        {
+            mensagem += $"{item.Key}: {item.Value:C}\n";
+        }
+
+        await DisplayAlert("Total dos Produtos", mensagem, "OK");
     }
+
 
     private async void MenuItem_Clicked(object sender, EventArgs e)
     {
