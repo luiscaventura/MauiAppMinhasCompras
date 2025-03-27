@@ -43,5 +43,23 @@ namespace MauiAppMinhasCompras.Helpers
 
             return _conn.QueryAsync<Produto>(sql);
         }
+
+        public Task<List<string>> GetCategorias()
+        {
+            string sql = "SELECT DISTINCT Categoria FROM Produto";
+            return _conn.QueryScalarsAsync<string>(sql);
+        }
+
+        public Task<List<Produto>> GetByCategoria(string categoria)
+        {
+            string sql = "SELECT * FROM Produto WHERE Categoria = ?";
+            return _conn.QueryAsync<Produto>(sql, categoria);
+        }
+
+        public Task<List<Produto>> SearchByDescricaoECategoria(string descricao, string categoria)
+        {
+            string sql = "SELECT * FROM Produto WHERE Descricao LIKE ? AND Categoria = ?";
+            return _conn.QueryAsync<Produto>(sql, "%" + descricao + "%", categoria);
+        }
     }
 }

@@ -6,11 +6,11 @@ namespace MauiAppMinhasCompras.Views;
 public partial class ListaProduto : ContentPage
 {
     ObservableCollection<Produto> lista = new ObservableCollection<Produto>();
+    private string categoriaSelecionada = "Todos";
 
     public ListaProduto()
     {
         InitializeComponent();
-
         lst_produtos.ItemsSource = lista;
     }
 
@@ -18,11 +18,8 @@ public partial class ListaProduto : ContentPage
     {
         try
         {
-            lista.Clear();
-
-            List<Produto> tmp = await App.Db.GetAll();
-
-            tmp.ForEach(i => lista.Add(i));
+            await CarregarCategorias();
+            await CarregarProdutos();
         }
         catch (Exception ex)
         {
@@ -30,12 +27,50 @@ public partial class ListaProduto : ContentPage
         }
     }
 
+    private async Task CarregarCategorias()
+    {
+        try
+        {
+            List<string> categorias = await App.Db.GetCategorias();
+            pickerCategoria.Items.Clear();
+
+            pickerCategoria.Items.Add("Todos");
+
+            foreach (var categoria in categorias)
+            {
+                pickerCategoria.Items.Add(categoria);
+            }
+
+            pickerCategoria.SelectedIndex = 0;
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Erro ao carregar categorias: {ex.Message}", "OK");
+        }
+    }
+
+    private async Task CarregarProdutos()
+    {
+        lista.Clear();
+        List<Produto> tmp;
+
+        if (categoriaSelecionada == "Todos")
+        {
+            tmp = await App.Db.GetAll();
+        }
+        else
+        {
+            tmp = await App.Db.GetByCategoria(categoriaSelecionada);
+        }
+
+        tmp.ForEach(i => lista.Add(i));
+    }
+
     private void ToolbarItem_Clicked(object sender, EventArgs e)
     {
         try
         {
             Navigation.PushAsync(new Views.NovoProduto());
-
         }
         catch (Exception ex)
         {
@@ -48,12 +83,19 @@ public partial class ListaProduto : ContentPage
         try
         {
             string q = e.NewTextValue;
-
             lst_produtos.IsRefreshing = true;
-
             lista.Clear();
 
-            List<Produto> tmp = await App.Db.Search(q);
+            List<Produto> tmp;
+
+            if (categoriaSelecionada == "Todos")
+            {
+                tmp = await App.Db.Search(q);
+            }
+            else
+            {
+                tmp = await App.Db.SearchByDescricaoECategoria(q, categoriaSelecionada);
+            }
 
             tmp.ForEach(i => lista.Add(i));
         }
@@ -70,9 +112,7 @@ public partial class ListaProduto : ContentPage
     private void ToolbarItem_Clicked_1(object sender, EventArgs e)
     {
         double soma = lista.Sum(i => i.Total);
-
         string msg = $"O total é {soma:C}";
-
         DisplayAlert("Total dos Produtos", msg, "OK");
     }
 
@@ -80,12 +120,10 @@ public partial class ListaProduto : ContentPage
     {
         try
         {
-            MenuItem selecinado = sender as MenuItem;
+            MenuItem selecionado = sender as MenuItem;
+            Produto p = selecionado.BindingContext as Produto;
 
-            Produto p = selecinado.BindingContext as Produto;
-
-            bool confirm = await DisplayAlert(
-                "Tem Certeza?", $"Remover {p.Descricao}?", "Sim", "Não");
+            bool confirm = await DisplayAlert("Tem Certeza?", $"Remover {p.Descricao}?", "Sim", "Não");
 
             if (confirm)
             {
@@ -104,7 +142,6 @@ public partial class ListaProduto : ContentPage
         try
         {
             Produto p = e.SelectedItem as Produto;
-
             Navigation.PushAsync(new Views.EditarProduto
             {
                 BindingContext = p,
@@ -120,20 +157,32 @@ public partial class ListaProduto : ContentPage
     {
         try
         {
-            lista.Clear();
-
-            List<Produto> tmp = await App.Db.GetAll();
-
-            tmp.ForEach(i => lista.Add(i));
+            await CarregarProdutos();
         }
         catch (Exception ex)
         {
             await DisplayAlert("Ops", ex.Message, "OK");
-
         }
         finally
         {
             lst_produtos.IsRefreshing = false;
+        }
+    }
+
+    private async void OnCategoriaSelecionada(object sender, EventArgs e)
+    {
+        try
+        {
+            var picker = sender as Picker;
+            if (picker.SelectedItem != null)
+            {
+                categoriaSelecionada = picker.SelectedItem.ToString();
+                await CarregarProdutos();
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Ops", ex.Message, "OK");
         }
     }
 }

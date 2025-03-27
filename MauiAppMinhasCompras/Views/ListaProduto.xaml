@@ -23,6 +23,11 @@
                    Placeholder="Busca de Produtos"
                    TextChanged="txt_search_TextChanged"/>
 
+        <!-- Filtro de Categoria -->
+        <Picker x:Name="pickerCategoria"
+            Title="Selecione uma categoria"
+            SelectedIndexChanged="OnCategoriaSelecionada"/>
+
         <Frame Padding="0" Margin="10" VerticalOptions="FillAndExpand">
             <ListView x:Name="lst_produtos"
                   IsPullToRefreshEnabled="True"
@@ -45,7 +50,7 @@
                             <ViewCell.ContextActions>
                                 <MenuItem Text="Remover" Clicked="MenuItem_Clicked" />
                             </ViewCell.ContextActions>
-                            <Grid ColumnDefinitions="30, 100, 80, 50, 90">
+                            <Grid ColumnDefinitions="30, 100, 80, 80, 50, 90">
                                 <Label Grid.Column="0" Text="{Binding Id}" Padding="5" />
                                 <Label Grid.Column="1" Text="{Binding Descricao}" />
                                 <Label Grid.Column="2" Text="{Binding Categoria}" />
